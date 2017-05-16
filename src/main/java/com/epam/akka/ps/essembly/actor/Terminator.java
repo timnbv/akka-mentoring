@@ -1,0 +1,28 @@
+package com.epam.akka.ps.essembly.actor;
+
+import akka.actor.AbstractActor;
+import akka.actor.AbstractLoggingActor;
+import akka.actor.ActorRef;
+import akka.actor.Terminated;
+
+/**
+ * @author Tim Ryzhov
+ */
+public class Terminator extends AbstractLoggingActor{
+    private final ActorRef ref;
+
+    public Terminator(ActorRef ref) {
+        this.ref = ref;
+        getContext().watch(ref);
+    }
+
+    @Override
+    public AbstractActor.Receive createReceive() {
+        return receiveBuilder()
+                .match(Terminated.class, t -> {
+                    log().info("{} has terminated, shutting down system", ref.path());
+                    getContext().system().terminate();
+                })
+                .build();
+    }
+}
